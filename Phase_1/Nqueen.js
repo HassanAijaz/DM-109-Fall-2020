@@ -1,35 +1,48 @@
-function queenPuzzle(rows, columns) {
-    if (rows <= 0) {
-        return [[]];
-    } else {
-        return addQueen(rows - 1, columns);
+var iterations = 0
+
+var print_board = function (columns) {
+  var n = columns.length, row = 0, col = 0
+  while (row < n) {
+    while (col < n) {
+      process.stdout.write(columns[row] === col ? 'Q ' : '# ')
+      col++
     }
+
+    process.stdout.write('\n')
+    col = 0
+    row++
+  }
 }
- 
-function addQueen(newRow, columns) {
-    var newSolutions = [];
-    var prev = queenPuzzle(newRow, columns);
-    console.log("prev---> ",prev)
-    console.log("row, col", newRow,columns)
-    for (var i = 0; i < prev.length; i++) {
-        var solution = prev[i];
-        for (var newColumn = 0; newColumn < columns; newColumn++) {
-            if (!hasConflict(newRow, newColumn, solution))
-                newSolutions.push(solution.concat([newColumn]))
-        }
+
+var has_conflict = function (columns) {
+  var len = columns.length, last = columns[len - 1], previous = len - 2
+
+  while (previous >= 0) {
+    if (columns[previous] === last) return true
+    if (last - (len - 1) === columns[previous] - previous) return true
+    if (last + (len - 1) === columns[previous] + previous) return true
+    previous--
+  }
+
+  return false
+}
+
+var place_next_queen = function (total, queens, columns) {
+  if (queens === 0) return columns
+  columns = columns || []
+
+  for (var column = 0; column < total; column++) {
+    columns.push(column)
+    iterations++
+    if (!has_conflict(columns) &&
+        place_next_queen(total, queens - 1, columns)) {
+      return columns
     }
-    return newSolutions;
+    columns.pop(column)
+  }
+
+  return null
 }
- 
-function hasConflict(newRow, newColumn, solution) {
-    for (var i = 0; i < newRow; i++) {
-        if (solution[i]     == newColumn          ||
-            solution[i] + i == newColumn + newRow || 
-            solution[i] - i == newColumn - newRow) {
-                return true;
-        }
-    }
-    return false;
-}
- 
-console.log(queenPuzzle(8,8));
+
+print_board(place_next_queen(28, 28))
+console.log('\niterations: ', iterations)
